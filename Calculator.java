@@ -26,6 +26,7 @@ public class Calculator {
 
     public static String evaluate(String equation, boolean p){
         int pos = -1;
+        colorNum = colorNum==5 ? 0 : colorNum+1;
 
         // PARENTHESES
         {
@@ -55,7 +56,8 @@ public class Calculator {
                     }
                     if(operation){
                         equation = replace(equation, parenRange, evaluate(equation.substring(openPos+1, closePos), true));
-                        System.out.println(equation);
+                        colorNum-=1;
+                        System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                     }
                     openPos = -1;
                     closePos = -1;
@@ -74,7 +76,7 @@ public class Calculator {
             if(pos > -1){
                 equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), '^'));
                 if(!p)
-                    System.out.println(equation);
+                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0; // Added this because shorting the equation would cause i to be out of range
             }
 
@@ -96,7 +98,7 @@ public class Calculator {
             if(pos > -1){
                 equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), equation.charAt(i)));
                 if(!p)
-                    System.out.println(equation);
+                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0;
             }
 
@@ -112,7 +114,7 @@ public class Calculator {
             if(pos > -1){
                 equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), equation.charAt(i)));
                 if(!p)
-                    System.out.println(equation);
+                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0;
             }
 
@@ -264,4 +266,19 @@ public class Calculator {
 
         return range;
     }
+
+    private class Colors{
+        public static final String ANSI_RESET = "\u001B[0m";
+        public static final String ANSI_BLACK = "\u001B[30m";
+        public static final String ANSI_RED = "\u001B[31m";
+        public static final String ANSI_GREEN = "\u001B[32m";
+        public static final String ANSI_YELLOW = "\u001B[33m";
+        public static final String ANSI_BLUE = "\u001B[34m";
+        public static final String ANSI_PURPLE = "\u001B[35m";
+        public static final String ANSI_CYAN = "\u001B[36m";
+        public static final String ANSI_WHITE = "\u001B[37m";
+    }
+
+    public static String[] colors = {"\u001B[33m", "\u001B[31m", "\u001B[35m", "\u001B[34m", "\u001B[36m", "\u001B[32m"};
+    public static int colorNum = -1;
 }
