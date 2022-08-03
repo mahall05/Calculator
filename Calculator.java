@@ -19,14 +19,15 @@ public class Calculator {
             }
 
             if(solving){
-                System.out.println("Result: " + evaluate(equation, false));
+                System.out.println("Result: " + evaluate(equation));
             }
         }
     }
 
-    public static String evaluate(String equation, boolean p){
+    public static String evaluate(String equation){
         int pos = -1;
         colorNum = colorNum==5 ? 0 : colorNum+1;
+        System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
 
         // PARENTHESES
         {
@@ -55,7 +56,7 @@ public class Calculator {
                         }
                     }
                     if(operation){
-                        equation = replace(equation, parenRange, evaluate(equation.substring(openPos+1, closePos), true));
+                        equation = replace(equation, parenRange, evaluate(equation.substring(openPos+1, closePos)));
                         colorNum-=1;
                         System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                     }
@@ -74,9 +75,8 @@ public class Calculator {
             }
 
             if(pos > -1){
-                equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), '^'));
-                if(!p)
-                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
+                equation = replace(equation, findRange(equation, pos, true), solve(equation, findRange(equation, pos, false), '^'));
+                System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0; // Added this because shorting the equation would cause i to be out of range
             }
 
@@ -96,9 +96,8 @@ public class Calculator {
             }
 
             if(pos > -1){
-                equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), equation.charAt(i)));
-                if(!p)
-                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
+                equation = replace(equation, findRange(equation, pos, true), solve(equation, findRange(equation, pos, false), equation.charAt(i)));
+                System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0;
             }
 
@@ -112,9 +111,8 @@ public class Calculator {
             }
 
             if(pos > -1){
-                equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos), equation.charAt(i)));
-                if(!p)
-                    System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
+                equation = replace(equation, findRange(equation, pos, true), solve(equation, findRange(equation, pos, false), equation.charAt(i)));
+                System.out.println(colors[colorNum]+equation+Colors.ANSI_RESET);
                 i = 0;
             }
 
@@ -152,11 +150,13 @@ public class Calculator {
         return buildEquation.toString();
     }
 
-    public static int solve(String set, char operation){
+    public static int solve(String equation, int[] range, char operation){
         int num1End = -1, num2Start = -1;
         int num1, num2;
         int result;
         int opPos = -1;
+
+        String set = equation.substring(range[0], range[1]+1);
 
         for(int i = 0; i < set.length(); i++){
             for(int j = 0; j < ops.length; j++){
@@ -213,14 +213,14 @@ public class Calculator {
         return result;
     }
 
-    public static String findSet(String equation, int pos){
+    public static int[] findRange(String equation, int pos, boolean includeParan){
         boolean found = false;
         int start = 0, end = equation.length()-1;
 
         for(int i = pos; i >= 0; i--){
             if(!found && Character.isDigit(equation.charAt(i))){
                 found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0)){
+            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0) && (equation.charAt(i) != '(' || !includeParan)){
                 start = i+1;
                 i = -100;
             }
@@ -230,33 +230,7 @@ public class Calculator {
         for(int i = pos; i < equation.length(); i++){
             if(!found && Character.isDigit(equation.charAt(i))){
                 found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i))){
-                end = i-1;
-                i = equation.length()+100;
-            }
-        }
-
-        return equation.substring(start, end+1);
-    }
-
-    public static int[] findRange(String equation, int pos){
-        boolean found = false;
-        int start = 0, end = equation.length()-1;
-
-        for(int i = pos; i >= 0; i--){
-            if(!found && Character.isDigit(equation.charAt(i))){
-                found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0) && equation.charAt(i) != '('){
-                start = i+1;
-                i = -100;
-            }
-        }
-        found = false;
-
-        for(int i = pos; i < equation.length(); i++){
-            if(!found && Character.isDigit(equation.charAt(i))){
-                found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && equation.charAt(i) != ')'){
+            }else if(found && !Character.isDigit(equation.charAt(i)) && (equation.charAt(i) != ')' || !includeParan)){
                 end = i-1;
                 i = equation.length()+100;
             }
