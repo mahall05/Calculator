@@ -1,124 +1,126 @@
-import java.lang.Math;
 import java.util.Scanner;
 
 public class Calculator {
-    public static char[] ops = {'^', '*', '/', '+', '-'};
-    public static Scanner in = new Scanner(System.in);
+    private static char[] ops = {'^', '*', '/', '+', '-'};
 
     public static void main(String[] args){
-        System.out.println("Enter equation");
-        //parse(in.nextLine());
-        solveEquation(in.nextLine());
-    }
+        Scanner in = new Scanner(System.in);
 
-    public static void solveEquation(String equation){
-        String[] sets = parseSets(equation);
-        StringBuilder buildEquation = new StringBuilder(equation);
+        boolean solved = false;
 
-        //buildEquation.lastIndexOf(str)
+        boolean solving = true;
+        // START SOLVING
+        while(solving){
+            System.out.println("Enter equation or \"end\" to exit");
+            String equation = in.nextLine();
 
-        for(int i = 0; i < sets.length; i++){
-            System.out.println("Set " + i + ": (" + sets[i] + ")");
-        }
+            if(equation.equalsIgnoreCase("end")){
+                solving = false;
+            }
 
-        for(int i = 0; i < ops.length; i++){
-            for(int j = 0; j < sets.length; j++){
-                boolean contains = false;
-                for(int k = 0; k < sets.length; k++){
-                    if(sets[j].charAt(k) == ops[i]){
-                        contains = true;
+            if(solving){
+                int pos = -1;
+
+                // EXPONENTS
+                for(int i = 0; i < equation.length(); i++){ // Search the entire equation for ^
+                    if(equation.charAt(i) == '^'){
+                        pos = i;
                     }
+
+                    if(pos > -1){
+                        equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos)));
+                        System.out.println(equation);
+                        i = 0; // Added this because shorting the equation would cause i to be out of range
+                    }
+
+                    pos = -1;
                 }
-                if(contains){
-                    double result = parse(sets[j]);
-                    //equation.replace()
+
+                // MULTIPLICATION / DIVISION
+                for(int i = 0; i < equation.length(); i++){
+                    if(equation.charAt(i) == '*' || equation.charAt(i) == '/'){
+                        pos = i;
+                    }
+
+                    if(pos > -1){
+                        equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos)));
+                        System.out.println(equation);
+                        i = 0;
+                    }
+
+                    pos = -1;
+                }
+
+                // ADDITION / SUBTRACTION
+                for(int i = 1; i < equation.length(); i++){
+                    if(equation.charAt(i) == '+' || equation.charAt(i) == '-'){
+                        pos = i;
+                    }
+
+                    if(pos > -1){
+                        equation = replace(equation, findRange(equation, pos), solve(findSet(equation, pos)));
+                        System.out.println(equation);
+                        i = 0;
+                    }
+
+                    pos = -1;
                 }
             }
         }
 
-        //equation.replace(target, replacement)
+        // END SOLVING
     }
 
-    public static String[] parseSets(String equation){
-        String[] sets = new String[equation.length()/2];
-        int numbers = 0;
-        int set = 0;
-        int num1Start = 0, num2Start = 0;
+    public static String replace(String equation, int[] range, int result){
+        StringBuilder buildEquation = new StringBuilder();
 
-        for(int i = 1; i <= equation.length(); i++){
-            if(Character.isDigit(equation.charAt(i-1)) && !Character.isDigit(equation.charAt(i))){
-                numbers++;
-            }
-            if(!Character.isDigit(equation.charAt(i-1)) && Character.isDigit(equation.charAt(i))){
-                num2Start = i;
-            }
-            if(i == equation.length()-1){
-                numbers++;
-                i = equation.length();
-            }
-            if(numbers == 2){
-                sets[set] = equation.substring(num1Start, i);
-                set++;
-                numbers = 1;
-                num1Start = num2Start;
-            }
-        }
+        buildEquation.append(equation.substring(0, range[0]));
+        //System.out.println(buildEquation.toString());
+        buildEquation.append(result);
+        //System.out.println(buildEquation.toString());
 
-        int fSets = 0;
-        for(int i = 0; i < sets.length; i++){
-            if(sets[i] != null){
-                fSets++;
-            }
-        }
-        String[] fullSets = new String[fSets];
-        for(int i = 0; i < fullSets.length; i++){
-            fullSets[i] = sets[i];
-        }
+        if(equation.length() > range[1]+1)
+            buildEquation.append(equation.substring(range[1]+1, equation.length()));
 
-        return fullSets;
+        return buildEquation.toString();
     }
 
-    public static double parse(String set){
-        char[] setArray = set.toCharArray();
-        double num1 = 0, num2 = 0, sum = 0;
-        char operation = 0;
-        int opPosition = set.length(), num1End = 0, num2Start = 0;
+    public static int solve(String set){
+        int num1End = -1, num2Start = -1;
+        int num1, num2;
+        int result;
+        char operation = '&';
+        int opPos = -1;
 
-        boolean cont = true;
         for(int i = 0; i < set.length(); i++){
-            if(setArray[i] == ' ' && cont){
-                cont = false;
-                num1End = i;
-            }
-
             for(int j = 0; j < ops.length; j++){
-                if(setArray[i] == ops[j]){
+                if(set.charAt(i) == ops[j]){
                     operation = ops[j];
-                    opPosition = j;
-
-                    if(cont){
-                        num1End = i;
-                        cont = false;
-                    }
+                    opPos = i;
                 }
-            }
-
-            if(opPosition != set.length() && Character.isDigit(setArray[i]) && num2Start == 0){
-                num2Start = i;
             }
         }
 
-        num1 = Integer.parseInt(set.substring(0, num1End));
+        for(int i = opPos; i >= 0; i--){
+            if(Character.isDigit(set.charAt(i))){
+                num1End = i;
+                i = -100;
+            }
+        }
+
+        for(int i = opPos; i < set.length(); i++){
+            if(Character.isDigit(set.charAt(i))){
+                num2Start = i;
+                i = set.length()+100;
+            }
+        }
+
+        num1 = Integer.parseInt(set.substring(0, num1End+1));
         num2 = Integer.parseInt(set.substring(num2Start, set.length()));
 
-        return solve(num1, num2, operation);
-    }
-
-    public static double solve(double num1, double num2, char op){
-        double result;
-        switch(op){
+        switch(operation){
             case('^'):
-                result = Math.pow(num1, num2);
+                result = (int) Math.pow(num1, num2);
                 break;
             case('*'):
                 result = num1 * num2;
@@ -140,5 +142,57 @@ public class Calculator {
         return result;
     }
 
-    // TODO, just test current character and previous character to determine end of number
+    public static String findSet(String equation, int pos){
+        boolean found = false;
+        int start = 0, end = equation.length()-1;
+
+        for(int i = pos; i >= 0; i--){
+            if(!found && Character.isDigit(equation.charAt(i))){
+                found = true;
+            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0)){
+                start = i+1;
+                i = -100;
+            }
+        }
+        found = false;
+
+        for(int i = pos; i < equation.length(); i++){
+            if(!found && Character.isDigit(equation.charAt(i))){
+                found = true;
+            }else if(found && !Character.isDigit(equation.charAt(i))){
+                end = i-1;
+                i = equation.length()+100;
+            }
+        }
+
+        return equation.substring(start, end+1);
+    }
+
+    public static int[] findRange(String equation, int pos){
+        boolean found = false;
+        int start = 0, end = equation.length()-1;
+
+        for(int i = pos; i >= 0; i--){
+            if(!found && Character.isDigit(equation.charAt(i))){
+                found = true;
+            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0)){
+                start = i+1;
+                i = -100;
+            }
+        }
+        found = false;
+
+        for(int i = pos; i < equation.length(); i++){
+            if(!found && Character.isDigit(equation.charAt(i))){
+                found = true;
+            }else if(found && !Character.isDigit(equation.charAt(i))){
+                end = i-1;
+                i = equation.length()+100;
+            }
+        }
+
+        int[] range = {start, end};
+
+        return range;
+    }
 }
