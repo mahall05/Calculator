@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class Calculator {
+public class DoubleCalculator {
     private static char[] ops = {'(', ')', '^', '*', '/', '+', '-'};
 
     public static void main(String[] args){
@@ -122,7 +122,7 @@ public class Calculator {
         return equation;
     }
 
-    public static String replace(String equation, int[] range, int result){
+    public static String replace(String equation, int[] range, double result){
         StringBuilder buildEquation = new StringBuilder();
 
         buildEquation.append(equation.substring(0, range[0]));
@@ -150,10 +150,10 @@ public class Calculator {
         return buildEquation.toString();
     }
 
-    public static int solve(String equation, int[] range, char operation){
+    public static double solve(String equation, int[] range, char operation){
         int num1End = -1, num2Start = -1;
-        int num1, num2;
-        int result;
+        double num1, num2;
+        double result;
         int opPos = -1;
 
         String set = equation.substring(range[0], range[1]+1);
@@ -180,12 +180,12 @@ public class Calculator {
             }
         }
 
-        num1 = Integer.parseInt(set.substring(0, num1End+1));
-        num2 = Integer.parseInt(set.substring(num2Start, set.length()));
+        num1 = Double.parseDouble(set.substring(0, num1End+1));
+        num2 = Double.parseDouble(set.substring(num2Start, set.length()));
 
         switch(operation){
             case('^'):
-                result = (int) Math.pow(num1, num2);
+                result = Math.pow(num1, num2);
                 break;
             case('*'):
                 result = num1 * num2;
@@ -220,7 +220,7 @@ public class Calculator {
         for(int i = pos; i >= 0; i--){
             if(!found && Character.isDigit(equation.charAt(i))){
                 found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0) && (equation.charAt(i) != '(' || !includeParan)){
+            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0) && equation.charAt(i) != '.' && (equation.charAt(i) != '(' || !includeParan)){
                 start = i+1;
                 i = -100;
             }
@@ -230,7 +230,7 @@ public class Calculator {
         for(int i = pos; i < equation.length(); i++){
             if(!found && Character.isDigit(equation.charAt(i))){
                 found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && (equation.charAt(i) != ')' || !includeParan)){
+            }else if(found && !Character.isDigit(equation.charAt(i)) && equation.charAt(i) != '.' && (equation.charAt(i) != ')' || !includeParan)){
                 end = i-1;
                 i = equation.length()+100;
             }
