@@ -13,6 +13,7 @@ public class DoubleCalculator {
         while(solving){
             System.out.println("Enter equation or \"end\" to exit");
             String equation = in.nextLine();
+            colorNum = -1;
 
             if(equation.equalsIgnoreCase("end")){
                 solving = false;
@@ -106,7 +107,7 @@ public class DoubleCalculator {
 
         // ADDITION / SUBTRACTION
         for(int i = 1; i < equation.length(); i++){
-            if(equation.charAt(i) == '+' || equation.charAt(i) == '-'){
+            if(equation.charAt(i) == '+' || (equation.charAt(i) == '-' && Character.isDigit(equation.charAt(i-1)) && Character.isDigit(equation.charAt(i+1)))){
                 pos = i;
             }
 
@@ -119,6 +120,13 @@ public class DoubleCalculator {
             pos = -1;
         }
 
+        // Remove decimal to make it prettier
+        for(int i = 0; i < equation.length(); i++){
+            if(equation.charAt(i) == '.' && i == equation.length()-2 && equation.charAt(i+1) == '0'){
+                equation = equation.substring(0, i);
+            }
+        }
+
         return equation;
     }
 
@@ -126,9 +134,7 @@ public class DoubleCalculator {
         StringBuilder buildEquation = new StringBuilder();
 
         buildEquation.append(equation.substring(0, range[0]));
-        //System.out.println(buildEquation.toString());
         buildEquation.append(result);
-        //System.out.println(buildEquation.toString());
 
         if(equation.length() > range[1]+1)
             buildEquation.append(equation.substring(range[1]+1, equation.length()));
@@ -220,7 +226,7 @@ public class DoubleCalculator {
         for(int i = pos; i >= 0; i--){
             if(!found && Character.isDigit(equation.charAt(i))){
                 found = true;
-            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && i==0) && equation.charAt(i) != '.' && (equation.charAt(i) != '(' || !includeParan)){
+            }else if(found && !Character.isDigit(equation.charAt(i)) && !((equation.charAt(i) == '-') && (i==0 || !Character.isDigit(equation.charAt(i-1)))) && equation.charAt(i) != '.' && (equation.charAt(i) != '(' || !includeParan)){
                 start = i+1;
                 i = -100;
             }
